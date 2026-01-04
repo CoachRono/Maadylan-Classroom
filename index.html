@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Tuition Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <nav class="bg-indigo-700 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center text-white">
+            <h1 class="text-xl font-bold"><i class="fas fa-chalkboard-teacher mr-2"></i>Maadylan Classroom</h1>
+            <div class="space-x-4">
+                <span class="text-sm bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400">Teacher: Daisy Rono</span>
+                <button class="bg-green-500 hover:bg-green-600 px-4 py-1 rounded text-sm font-bold transition">Withdraw Earnings: $450</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="md:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500">
+                    <h2 class="text-lg font-bold mb-4"><i class="fas fa-bullhorn text-indigo-500 mr-2"></i>Post Announcement</h2>
+                    <textarea id="announceText" class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Tell your students something..."></textarea>
+                    <button onclick="postAnnouncement()" class="mt-2 w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition">Post to Stream</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-green-500">
+                    <h2 class="text-lg font-bold mb-4"><i class="fas fa-tasks text-green-500 mr-2"></i>Post Classwork</h2>
+                    <input id="workTitle" type="text" class="w-full border p-2 rounded text-sm mb-2" placeholder="Assignment Title">
+                    <input id="workDue" type="date" class="w-full border p-2 rounded text-sm mb-2">
+                    <button onclick="postWork()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Assign to Students</button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b">
+                        <h2 class="text-lg font-bold text-gray-700"><i class="fas fa-graduation-cap mr-2"></i>Submissions & Grading</h2>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                                <th class="p-4 border-b">Student Name</th>
+                                <th class="p-4 border-b">Assignment</th>
+                                <th class="p-4 border-b">Status</th>
+                                <th class="p-4 border-b">Grade (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradingBody">
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 border-b text-sm">Kelvin Kiprop</td>
+                                <td class="p-4 border-b text-sm">Introduction to Map work</td>
+                                <td class="p-4 border-b"><span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Pending</span></td>
+                                <td class="p-4 border-b"><input type="number" class="w-16 border rounded p-1 text-center" placeholder="--"></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 border-b text-sm">Amara Okafor</td>
+                                <td class="p-4 border-b text-sm">Utangulizi wa Bembea</td>
+                                <td class="p-4 border-b"><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Submitted</span></td>
+                                <td class="p-4 border-b"><input type="number" class="w-16 border rounded p-1 text-center" value="92"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="announcementStream" class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-400">
+                        <p class="text-gray-800">Welcome to the new term! Please ensure you have paid your tuition fees to access next week's live session link.</p>
+                        <span class="text-xs text-gray-500 mt-2 block">Posted Jan 04, 2026</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function postAnnouncement() {
+            const text = document.getElementById('announceText').value;
+            if (!text) return;
+
+            const stream = document.getElementById('announcementStream');
+            const newPost = document.createElement('div');
+            newPost.className = "bg-white p-4 rounded-lg shadow border-l-4 border-indigo-400 transition transform scale-95 animate-pulse";
+            newPost.innerHTML = `
+                <p class="text-gray-800">${text}</p>
+                <span class="text-xs text-gray-500 mt-2 block">Posted Just Now</span>
+            `;
+            stream.prepend(newPost);
+            document.getElementById('announceText').value = '';
+            setTimeout(() => newPost.classList.remove('animate-pulse', 'scale-95'), 300);
+        }
+
+        function postWork() {
+            const title = document.getElementById('workTitle').value;
+            if (!title) return;
+            alert("Assignment '" + title + "' has been posted to all enrolled students!");
+            document.getElementById('workTitle').value = '';
+        }
+    </script>
+</body>
+</html>
