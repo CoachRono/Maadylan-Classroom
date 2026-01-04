@@ -3,105 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Tuition Portal</title>
+    <title>Maadylan Portal | Professional Online Tuition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+<body class="bg-gray-100 font-sans">
 
-    <nav class="bg-indigo-700 p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center text-white">
-            <h1 class="text-xl font-bold"><i class="fas fa-chalkboard-teacher mr-2"></i>Maadylan Classroom</h1>
-            <div class="space-x-4">
-                <span class="text-sm bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400">Teacher: Daisy Rono</span>
-                <button class="bg-green-500 hover:bg-green-600 px-4 py-1 rounded text-sm font-bold transition">Withdraw Earnings: $450</button>
+    <div id="authScreen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-indigo-700">
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-black text-indigo-700 tracking-tight">Maadylan Portal</h1>
+                <p class="text-gray-500 mt-2">Choose your portal access</p>
+            </div>
+            <div class="space-y-4">
+                <button onclick="initApp('Teacher')" class="w-full flex items-center p-4 border-2 border-gray-100 rounded-xl hover:border-indigo-600 hover:bg-indigo-50 transition">
+                    <i class="fas fa-chalkboard-teacher text-2xl text-indigo-600 mr-4"></i>
+                    <div class="text-left"><span class="block font-bold">Teacher Account</span><span class="text-xs text-gray-400">Post work & Grade</span></div>
+                </button>
+                <button onclick="initApp('Student')" class="w-full flex items-center p-4 border-2 border-gray-100 rounded-xl hover:border-green-600 hover:bg-green-50 transition">
+                    <i class="fas fa-user-graduate text-2xl text-green-600 mr-4"></i>
+                    <div class="text-left"><span class="block font-bold">Student Account</span><span class="text-xs text-gray-400">View lessons & Submit</span></div>
+                </button>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mx-auto mt-8 p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div class="md:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500">
-                    <h2 class="text-lg font-bold mb-4"><i class="fas fa-bullhorn text-indigo-500 mr-2"></i>Post Announcement</h2>
-                    <textarea id="announceText" class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Tell your students something..."></textarea>
-                    <button onclick="postAnnouncement()" class="mt-2 w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition">Post to Stream</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-green-500">
-                    <h2 class="text-lg font-bold mb-4"><i class="fas fa-tasks text-green-500 mr-2"></i>Post Classwork</h2>
-                    <input id="workTitle" type="text" class="w-full border p-2 rounded text-sm mb-2" placeholder="Assignment Title">
-                    <input id="workDue" type="date" class="w-full border p-2 rounded text-sm mb-2">
-                    <button onclick="postWork()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Assign to Students</button>
+    <div id="mainDashboard" class="hidden min-h-screen">
+        <nav class="bg-indigo-700 p-4 text-white shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-bold italic">Maadylan Portal <span id="roleLabel" class="ml-2 text-[10px] bg-white text-indigo-700 px-2 py-1 rounded uppercase"></span></h1>
+                <div class="flex items-center gap-4">
+                    <div id="teacherBalance" class="hidden bg-green-500 px-3 py-1 rounded text-xs font-bold">Earnings: $1,240</div>
+                    <button onclick="location.reload()" class="text-xs opacity-70 hover:opacity-100">Logout</button>
                 </div>
             </div>
+        </nav>
 
-            <div class="md:col-span-2 space-y-6">
+        <div class="container mx-auto mt-8 p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="bg-gray-50 p-4 border-b">
-                        <h2 class="text-lg font-bold text-gray-700"><i class="fas fa-graduation-cap mr-2"></i>Submissions & Grading</h2>
+                <div class="space-y-6">
+                    <div id="teacherControls" class="hidden bg-white p-6 rounded-xl shadow border-t-4 border-indigo-500">
+                        <h2 class="font-bold mb-4 text-gray-700">Classroom Management</h2>
+                        <textarea id="annInput" class="w-full border p-3 rounded-lg text-sm mb-2" rows="3" placeholder="Post an announcement..."></textarea>
+                        <button onclick="dbPostAnnouncement()" class="w-full bg-indigo-600 text-white py-2 rounded font-bold hover:bg-indigo-700 transition">Post Announcement</button>
                     </div>
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
-                                <th class="p-4 border-b">Student Name</th>
-                                <th class="p-4 border-b">Assignment</th>
-                                <th class="p-4 border-b">Status</th>
-                                <th class="p-4 border-b">Grade (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gradingBody">
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4 border-b text-sm">Kelvin Kiprop</td>
-                                <td class="p-4 border-b text-sm">Introduction to Map work</td>
-                                <td class="p-4 border-b"><span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Pending</span></td>
-                                <td class="p-4 border-b"><input type="number" class="w-16 border rounded p-1 text-center" placeholder="--"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4 border-b text-sm">Amara Okafor</td>
-                                <td class="p-4 border-b text-sm">Utangulizi wa Bembea</td>
-                                <td class="p-4 border-b"><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Submitted</span></td>
-                                <td class="p-4 border-b"><input type="number" class="w-16 border rounded p-1 text-center" value="92"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
 
-                <div id="announcementStream" class="space-y-4">
-                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-400">
-                        <p class="text-gray-800">Welcome to the new term! Please ensure you have paid your tuition fees to access next week's live session link.</p>
-                        <span class="text-xs text-gray-500 mt-2 block">Posted Jan 04, 2026</span>
+                    <div id="studentControls" class="hidden bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+                        <h2 class="font-bold mb-4 text-gray-700">Submit Your Work</h2>
+                        <textarea id="subInput" class="w-full border p-3 rounded-lg text-sm mb-2" rows="4" placeholder="Paste your Google Drive link or answer..."></textarea>
+                        <button onclick="dbSubmitWork()" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700 transition">Turn In Assignment</button>
                     </div>
                 </div>
 
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="teacherGradebook" class="hidden bg-white rounded-xl shadow overflow-hidden">
+                        <div class="bg-gray-50 p-4 border-b font-bold text-gray-700">Submissions to Grade</div>
+                        <table class="w-full text-left">
+                            <thead class="text-xs bg-gray-100 text-gray-500 uppercase">
+                                <tr><th class="p-4">Student</th><th class="p-4">Status</th><th class="p-4">Grade</th></tr>
+                            </thead>
+                            <tbody id="gradingTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h2 class="font-bold text-gray-700 mb-4">Classroom Stream</h2>
+                        <div id="liveStream" class="space-y-4">
+                            <p class="text-gray-400 text-sm italic">Syncing with cloud...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function postAnnouncement() {
-            const text = document.getElementById('announceText').value;
-            if (!text) return;
+        // --- 1. FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2ZmMC4DCK7JhPnFU1oPMHvU-RllpcOqw",
+            authDomain: "maadylan-classroom.firebaseapp.com",
+            projectId: "maadylan-classroom",
+            storageBucket: "maadylan-classroom.firebasestorage.app",
+            messagingSenderId: "826023847616",
+            appId: "1:826023847616:web:138bb211715a2a51152f25"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            const stream = document.getElementById('announcementStream');
-            const newPost = document.createElement('div');
-            newPost.className = "bg-white p-4 rounded-lg shadow border-l-4 border-indigo-400 transition transform scale-95 animate-pulse";
-            newPost.innerHTML = `
-                <p class="text-gray-800">${text}</p>
-                <span class="text-xs text-gray-500 mt-2 block">Posted Just Now</span>
-            `;
-            stream.prepend(newPost);
-            document.getElementById('announceText').value = '';
-            setTimeout(() => newPost.classList.remove('animate-pulse', 'scale-95'), 300);
+        let userRole = "";
+        const mockStudentName = "Kelvin Kiprop"; // Simulated logged-in student
+
+        // --- 2. APP FLOW ---
+        function initApp(role) {
+            userRole = role;
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('roleLabel').innerText = role;
+
+            if(role === 'Teacher') {
+                document.getElementById('teacherControls').classList.remove('hidden');
+                document.getElementById('teacherGradebook').classList.remove('hidden');
+                document.getElementById('teacherBalance').classList.remove('hidden');
+                listenToSubmissions();
+            } else {
+                document.getElementById('studentControls').classList.remove('hidden');
+                listenToMyGrades(); // Specific listener for student feedback
+            }
+            listenToAnnouncements();
         }
 
-        function postWork() {
-            const title = document.getElementById('workTitle').value;
-            if (!title) return;
-            alert("Assignment '" + title + "' has been posted to all enrolled students!");
-            document.getElementById('workTitle').value = '';
+        // --- 3. TEACHER ACTIONS ---
+        async function dbPostAnnouncement() {
+            const text = document.getElementById('annInput').value;
+            if(!text) return;
+            await db.collection("announcements").add({
+                content: text,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('annInput').value = "";
+        }
+
+        async function dbUpdateGrade(id, val) {
+            await db.collection("submissions").doc(id).update({ 
+                grade: val, 
+                status: "Graded",
+                gradedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        function listenToSubmissions() {
+            db.collection("submissions").orderBy("timestamp", "desc").onSnapshot(snap => {
+                const tbody = document.getElementById('gradingTableBody');
+                tbody.innerHTML = "";
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    tbody.innerHTML += `
+                        <tr class="border-t text-sm hover:bg-gray-50 transition">
+                            <td class="p-4 font-bold text-indigo-700">${data.studentName}</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] ${data.grade ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${data.status}</span></td>
+                            <td class="p-4"><input type="number" onchange="dbUpdateGrade('${doc.id}', this.value)" value="${data.grade || ''}" class="w-12 border rounded text-center focus:ring-2 focus:ring-indigo-500 outline-none"></td>
+                        </tr>`;
+                });
+            });
+        }
+
+        // --- 4. STUDENT ACTIONS ---
+        async function dbSubmitWork() {
+            const work = document.getElementById('subInput').value;
+            if(!work) return;
+            await db.collection("submissions").add({
+                studentName: mockStudentName,
+                content: work,
+                status: "Submitted",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('subInput').value = "";
+            alert("Success! Your work is now visible to the teacher.");
+        }
+
+        function listenToMyGrades() {
+            db.collection("submissions").where("studentName", "==", mockStudentName).onSnapshot(snap => {
+                const stream = document.getElementById('liveStream');
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.grade) {
+                        const gradeDiv = document.createElement('div');
+                        gradeDiv.className = "p-4 bg-green-600 text-white rounded-lg shadow-lg mb-4 animate-bounce";
+                        gradeDiv.innerHTML = `<i class="fas fa-star mr-2"></i><strong>New Grade:</strong> You scored ${data.grade}% on your last task!`;
+                        stream.prepend(gradeDiv);
+                    }
+                });
+            });
+        }
+
+        // --- 5. SHARED STREAM ---
+        function listenToAnnouncements() {
+            db.collection("announcements").orderBy("timestamp", "desc").onSnapshot(snap => {
+                const stream = document.getElementById('liveStream');
+                // We don't clear the whole stream to allow Grade notifications to stay at the top
+                const existingPosts = stream.querySelectorAll('.announcement-post');
+                existingPosts.forEach(p => p.remove());
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const post = document.createElement('div');
+                    post.className = "announcement-post p-4 bg-white border-l-4 border-indigo-500 rounded shadow-sm mb-3";
+                    post.innerHTML = `
+                        <p class="text-gray-800 text-sm">${data.content}</p>
+                        <span class="text-[9px] text-gray-400 mt-2 block uppercase font-bold tracking-widest">Teacher Update • Verified</span>
+                    `;
+                    stream.appendChild(post);
+                });
+            });
         }
     </script>
 </body>
